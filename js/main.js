@@ -1,43 +1,29 @@
-const d = document;
-$main = d.querySelector("main");
 
-const getHTML = (options) => {
-  let { url, success, error } = options;
-  const xhr = new XMLHttpRequest();
 
-  xhr.addEventListener("readystatechange", (e) => {
-    if (xhr.readyState !== 4) return;
+document.addEventListener("DOMContentLoaded", (e) => {
+  const includeHTML = (el, url) => {
+    const xhr = new XMLHttpRequest();
 
-    if (xhr.status >= 200 && xhr.status < 300) {
-      let html = xhr.responseText;
-      success(html);
-    } else {
-      let message = xhr.statusText || "Ocurrio un error";
-      error(`Error ${xhr.status}: ${message}`);
-    }
-  });
+    xhr.addEventListener("readystatechange", (e) => {
+      if (xhr.readyState !== 4) return;
 
-  xhr.open("GET", url);
-
-  xhr.setRequestHeader("Content-type", "text/html; charset=utf-8");
-
-  xhr.send();
-};
-
-d.addEventListener("DOMContentLoaded", (e) => {
-  getHTML({
-    url: "assets/home.html",
-    success: (html) => ($main.innerHTML = html),
-    error: (err) => ($main.innerHTML = `<h1>${err}</h1>`),
-  });
-});
-d.addEventListener("click", (e) => {
-  if (e.target.matches(".menu a")) {
-    e.preventDefault();
-    getHTML({
-      url: e.target.href,
-      success: (html) => ($main.innerHTML = html),
-      error: (err) => ($main.innerHTML = `<h1>${err}</h1>`),
+      if (xhr.status >= 200 && xhr.status < 300) {
+        el.outerHTML = xhr.responseText;
+      } else {
+        let message =
+          xhr.statusText ||
+          "Error al cargar el archivo, verifica que estes haciendo la peticion por http o https";
+        el.outerHTML = `<div>Error${xhr.status}: ${message}</div>`;
+      }
     });
-  }
+
+    xhr.open("GET", url);
+    xhr.setRequestHeader("Content-type", "text/html;charset=utf-8");
+
+    xhr.send();
+  };
+
+  document
+    .querySelectorAll("[data-include]")
+    .forEach((el) => includeHTML(el, el.getAttribute("data-include")));
 });
